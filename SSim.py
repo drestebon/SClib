@@ -221,8 +221,6 @@ class SSim:
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
-    x0 = np.array([0.0,0.0])
-
     h    = 1
     Tsim = 50
     Ts   = h/100
@@ -245,47 +243,26 @@ if __name__ == "__main__":
     sim.G.eval('f_init',[tau0, tau1])
     sim.C.eval('c_init',[tau0, tau1, u_hat, x0_hat, h])
 
-    r = np.array([2 if x >= 1.0 else 0 for x in sim.tk])
-    d = np.array([0.5 if x >= 20.0 else 0 for x in sim.tk])
+    r = 0 #np.array([2 if x >= 1.0 else 0 for x in sim.tk])
+    d = 0 #np.array([0.5 if x >= 20.0 else 0 for x in sim.tk])
 
     sim.set_r(r)
     sim.set_d(d)
     sim.set_r(np.vstack((sim.r,np.array([sim.d]))).transpose())
 
-    sim.run_sim(x0)
+    import numpy.random as rnd
 
-    plt.clf()
-    plt.plot(sim.x[:,0], sim.x[:,1])
-    plt.plot(sim.y[:,0], sim.y[:,1], 'o')
 
-    x00 = np.linspace(0.4, 0.54, 100)
-    x10 = -np.sign(x00-0.5)*(x00-0.5)**2*tau0/(2*tau1*u_hat)+2
-    plt.plot(x00, x10)
+    fig = plt.figure(figsize=(3.5,2.1))
 
-    m = h/(2*tau1)
-    b = sim.y[:,1]-sim.y[:,0]*m
+    for i in range(80):
+        x0 = np.array([2, 3])*rnd.random((1,2))[0]-np.array([1, 1.5])
+        sim.run_sim(x0)
+        plt.plot(sim.x[:,0], sim.x[:,1], 'k')
 
-    plt.plot(x00, x00*m+b[27])
-
-    #plt.subplot(4,1,1)
-    #plt.plot(sim.tk, sim.r[:,0], 'k--', lw=2, drawstyle='steps-post')
-    #plt.plot(sim.t, sim.x)
-    #plt.plot(sim.tk, sim.u, '.-', drawstyle='steps-post')
-    #plt.plot(sim.tk, sim.Co, '.-', drawstyle='steps-post')
-    #plt.grid()
-
-    #plt.subplot(4,1,2)
-    #plt.grid()
-    #plt.plot(sim.t,sim.Go)
-
-    #plt.subplot(4,1,3)
-    #plt.grid()
-    #plt.plot(sim.tk,sim.u,drawstyle='steps-post')
-
-    #plt.subplot(4,1,4)
-    #plt.grid()
-    #plt.plot(sim.tk,sim.Co,drawstyle='steps-post')
-
+    plt.xlabel('x_0')
+    plt.ylabel('x_1')
+    fig.tight_layout(pad=0.5)
     plt.draw()
     plt.show()
 
