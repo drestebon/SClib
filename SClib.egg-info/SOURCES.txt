@@ -1,0 +1,8 @@
+setup.cfg
+setup.py
+SClib/SClib.h
+SClib/__init__.py
+SClib.egg-info/PKG-INFO
+SClib.egg-info/SOURCES.txt
+SClib.egg-info/dependency_links.txt
+SClib.egg-info/top_level.txt

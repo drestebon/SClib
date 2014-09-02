@@ -1,5 +1,5 @@
 #include <math.h>
-#include "SClib.h"
+#include <SClib.h>
 
 #define EPS 0.0
 #define fsgn(x) ((EPS < x) - (x < -EPS))
@@ -9,10 +9,10 @@ static float u_hat, x0_hat, h;
 static float tau;
 static float m, _K, __K;
 
-      PYO(c_init,0);
-PYO_TYPES(c_init,0)
-      PYI(c_init,1, 5);
-PYI_TYPES(c_init,1, FLOAT)
+SCL_OL(c_init,0);
+SCL_OT(c_init,0)
+SCL_IL(c_init,1, 5);
+SCL_IT(c_init,1, FLOAT)
 void c_init(float * params)
 {
     tau0 = params[0];
@@ -65,10 +65,10 @@ float pwm1(float *x, int ioa)
 }
 
 #define SIMOUT_LEN 20
-      PYO(ctrl,2, 1,    SIMOUT_LEN);
-PYO_TYPES(ctrl,2, FLOAT,FLOAT);
-      PYI(ctrl,3,     2,    2,    2);
-PYI_TYPES(ctrl,3, FLOAT,FLOAT,FLOAT);
+SCL_OL(ctrl,2, 1,    SIMOUT_LEN);
+SCL_OT(ctrl,2, FLOAT,FLOAT);
+SCL_IL(ctrl,3,     2,    2,    2);
+SCL_IT(ctrl,3, FLOAT,FLOAT,FLOAT);
 void ctrl(float * u,  /* outputs */
            float * f,
            float * r,  /* inputs  */
@@ -138,10 +138,10 @@ void ctrl(float * u,  /* outputs */
     /*u[0] = u_s[io];*/
 }
 
-      PYO(wrap,1, 0);
-PYO_TYPES(wrap,1, FLOAT);
-      PYI(wrap,4, 0,         0,     2,   2);
-PYI_TYPES(wrap,4, FLOAT, FLOAT, FLOAT, INT);
+SCL_OL(wrap,1, 0);
+SCL_OT(wrap,1, FLOAT);
+SCL_IL(wrap,4, 0,         0,     2,   2);
+SCL_IT(wrap,4, FLOAT, FLOAT, FLOAT, INT);
 void wrap(float * u,    /* outputs */
           float * x0,    /* inputs */
           float * x1,

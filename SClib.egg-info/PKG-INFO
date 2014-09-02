@@ -1,0 +1,105 @@
+Metadata-Version: 1.1
+Name: SClib
+Version: 1.0.0
+Summary: wrapper for C functions
+Home-page: https://github.com/drestebon/SClib
+Author: drestebon
+Author-email: sanestebon@gmail.com
+License: GPLv2
+Description: SClib
+        =====
+        
+        A simple hack that allows easy and straightforward evaluation of C functions
+        within python code, boosting flexibility for better trade-off between
+        computation power and feature availability, such as visualization and existing
+        computation routines in SciPy.
+        
+        
+        At the core of SClib [#]_ is ctypes [Hell]_, which actually does the whole
+        work: it maps Python data to C compatible data and provides a way to call
+        functions in DLLs or shared libraries.  SClib acts as glue: it puts things
+        together for the user, to provide him with an easy to use interface.
+        
+        .. [#] The code for SClib and example use are availible at <https://github.com/drestebon/SClib>
+        
+        The requirements for SClib are very simple: call a function on an array of
+        numbers of arbitrary type and size and return the output of the function, again
+        of arbitrary type and size.
+        
+        The resulting interface is also very simple: A library is initialized in the
+        python side with the path to the DLL (or shared library) and a list with the
+        names of the functions to be called:
+        
+        .. code-block:: python
+        
+           In [1]: import SClib as sc
+           In [2]: lib = sc.Clib('test.so', ['fun'])
+        
+        The functions are then available as a members of the library and can be called
+        with the appropriate number of arguments, which are one dimensional arrays of
+        numbers.  The function returns a list containing the output arrays of the
+        function:
+        
+        .. code-block:: python
+        
+           In [3]: out, = lib.fun([0])
+        
+        In the C counterpart, the function declaration must be accompanied with
+        specifications of the inputs and outputs lengths and types. This is
+        accomplished with the helper macros defined in sclib.h:
+        
+        .. code-block:: c
+        
+           #include <sclib.h>
+                 PYO(fun, 1,   1);
+           PYO_TYPES(fun, 1, INT);
+                 PYI(fun, 1,   1);
+           PYI_TYPES(fun, 1, INT);
+           void fun(int * out, int * in) {
+               *out = 42;
+           }
+        
+        An arbitrary number of inputs or outputs can be specified, for example:
+        
+        .. code-block:: c
+        
+           #include <math.h>
+           #include <sclib.h>
+                 PYO(fun, 2,   1,     2);
+           PYO_TYPES(fun, 2, INT, FLOAT);
+                 PYI(fun, 2,   1,     2);
+           PYI_TYPES(fun, 2, INT, FLOAT);
+           void fun(int * out0, float * out1,
+                    int * in0, float * in1) {
+               *out0 = 42*in0[0];
+               out1[0] = in1[0]*in1[1];
+               out1[1] = powf(in1[0], in1[1]);
+           }
+        
+        In the function declaration, all the outputs must precede the inputs and must
+        be placed in the same order as in the PY macros.
+        
+        These specifications are processed during compilation time, but only the number
+        of inputs and outputs is static, the lengths of each component can be
+        overridden at run time:
+        
+        .. code-block:: python
+        
+           In [4]: lib.INPUT_LEN['fun'] = [10, 1]
+           In [5]: lib.retype()
+        
+        In these use cases the length of the arguments should be given to the function
+        through an extra integer argument.
+        
+        In the function body, both inputs and outputs should be treated as one
+        dimensional arrays.
+        
+        
+Keywords: C libraries
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Education
+Classifier: License :: OSI Approved :: GNU General Public License v2 (GPLv2)
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3.4

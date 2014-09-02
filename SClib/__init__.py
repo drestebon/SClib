@@ -1,21 +1,53 @@
 #!/usr/bin/python
 import numpy as np
 import ctypes as ctypes
-import sys
 import os
+from subprocess import check_output
 
 def error(message):
+    import sys
     sys.stderr.write("error: %s\n" % message)
     sys.exit(1)
 
 # Funcion en c
 class Clib:
+    """Loads the functions listed in fnames from the library in lib_path"""
+
+    MF_TEXT = """
+CC      = gcc
+CCOPTS  = -Wall -O2 -ffast-math -fPIC -g
+LIBS    = -lm
+INCLUDE = -I/usr/include -I{}
+LDFLAGS = -L/usr/lib
+LIB_DIR = .
+
+clean:
+	rm -rf *.o $(LIB_DIR)/*.so
+
+#####################################################################
+# Workers
+#####################################################################
+$(LIB_DIR)/%.so: %.o
+	$(CC) -shared -o $@ $<
+
+%.o: %.c
+	$(CC) $(INCLUDE) -c $(CCOPTS) $< $(LIBS)
+""".format(os.path.dirname(__file__))
+
     def __init__(self, lib_path, fnames=[]):
+
         self.lib_path = lib_path
+
+        self.make(loaded=False)
 
         self.lib = ctypes.CDLL(lib_path)
 
-        self.TYPE = [ctypes.c_int, ctypes.c_long, ctypes.c_float, ctypes.c_double, ctypes.c_longdouble]
+        self.TYPE = [ctypes.c_int,
+                     ctypes.c_long,
+                     ctypes.c_float,
+                     ctypes.c_double,
+                     ctypes.c_longdouble]
+
         self.N_INPUTS = {}
         self.INPUT_LEN = {}
         self.INPUT_TYPE = {}
@@ -104,77 +136,16 @@ class Clib:
         exec(code, d)
         setattr(self.__class__, fun, d[fun])
 
+    def make(self, loaded=True):
+        if not os.path.isfile("Makefile"):
+            fd = open("Makefile", "w")
+            fd.write(self.MF_TEXT)
+            fd.close()
 
-if __name__ == "__main__":
-    from subprocess import check_output
-    from mpl_toolkits.mplot3d import Axes3D
-    import matplotlib.pyplot as plt
-    import matplotlib.cm as cm
-
-    # Compile and load
-    libname = "di_c.so"
-    libpath = os.getcwd()+"/lib/"+libname
-    functions = ['ctrl', 'c_init', 'wrap']
-
-    try:
-        ex_lib = Clib(libpath, functions)
-    except:
-        pass
-
-    os.chdir('src')
-    if str(check_output(["make", '../lib/'+libname])).find("is up to date")<0:
-        try:
-            ex_lib.reload()
-        except:
-            ex_lib = Clib(libpath, functions)
-    os.chdir('..')
-
-    # Library initialization
-    tau0   = 5
-    tau1   = 5
-    u_hat  = 1
-    x0_hat = 1
-    h      = 1
-
-    ex_lib.c_init([tau0, tau1, u_hat, x0_hat, h])
-
-    # Evaluar 1 punto
-    r = np.array([0.0, -.0])
-    y = np.array([0.0, 2.2])
-    x = np.array([0.0, 2.2])
-    u = ex_lib.ctrl(r, y, x)[0]
-
-    print("ctrl(r={}, y={}, x={}) = {}".format(r, y, x, u))
-
-    # Wrap pa dominio cuadrado
-    Nx = int(200+1);
-    Ny = int(200+1);
-    x = np.linspace(-1.5, 1.5, num=Nx)
-    y = np.linspace(-1.5, 1.5, num=Ny)
-
-    ex_lib.INPUT_LEN['wrap'][0:2] = [Nx, Ny]
-    ex_lib.OUTPUT_LEN['wrap']     = [Nx*Ny]
-    ex_lib.retype()
-
-    RES = ex_lib.wrap(x, y, r, [Nx ,Ny])[0].reshape((Nx, Ny))
-
-    #fig = plt.figure(1)
-    fig = plt.figure(figsize=(3.5,2.1))
-    Y, X = np.meshgrid(y, x)
-
-    plt.clf()
-
-    #ax = fig.add_subplot(1,1,1, projection='3d')
-    #ax.plot_wireframe(X, Y, RES)
-    plt.contourf(X, Y, RES, cmap=cm.gray)
-
-    plt.xlabel('x_0')
-    plt.ylabel('x_1')
-    plt.title('u=\pi(x)')
-    plt.colorbar()
-
-    fig.tight_layout(pad=0.5)
-
-    plt.draw()
-    plt.show()
+        if str(check_output(["make", self.lib_path])).find("is up to date")<0:
+            if loaded:
+                try:
+                    self.reload()
+                except:
+                    print("SClib: tried to reload after $ make {}, but did not work".format(self.lib_path))
 
