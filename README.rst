@@ -47,7 +47,7 @@ SClib is also available at PyPI_, you can install it with:
 
 .. code-block:: bash
 
-    $ pip SClib
+    $ pip install SClib
 
 Usage
 -----
