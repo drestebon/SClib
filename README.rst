@@ -6,10 +6,10 @@ within python code, boosting flexibility for better trade-off between
 computation power and feature availability, such as visualization and existing
 computation routines in SciPy.
 
-At the core of SClib [#]_ is ctypes [Hell]_, which actually does the whole
-work: it maps Python data to C compatible data and provides a way to call
-functions in DLLs or shared libraries.  SClib acts as glue: it puts things
-together for the user, to provide him with an easy to use interface.
+At the core of SClib is ctypes [Hell]_, which actually does the whole work: it
+maps Python data to C compatible data and provides a way to call functions in
+DLLs or shared libraries.  SClib acts as glue: it puts things together for the
+user, to provide him with an easy to use interface.
 
 Instalation
 -----------
