@@ -11,8 +11,8 @@ maps Python data to C compatible data and provides a way to call functions in
 DLLs or shared libraries.  SClib acts as glue: it puts things together for the
 user, to provide him with an easy to use interface.
 
-Instalation
------------
+Installation
+------------
 
 Dependencies
 ............
